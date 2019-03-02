@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="http://dc-js.github.io/dc.js/css/dc.css"/>
+    <script type="text/javascript" src="http://dc-js.github.io/dc.js/js/d3.js"></script>
+    <script type="text/javascript" src="http://dc-js.github.io/dc.js/js/crossfilter.js"></script>
+    <script type="text/javascript" src="http://dc-js.github.io/dc.js/js/dc.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/reductio/0.6.3/reductio.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/reductio/0.6.3/reductio.min.js"></script>
+</head>
+
+
+<style>
+      body{background-color: #3f3c3b}
+      .header
+      {
+        background-color: lightgrey;
+        height: 45px;
+        border:1px;
+        box-shadow: 0px 4px 4px 0px #888888;
+        text-align: center;
+        font-size: 25px;
+        font-weight: bold;
+        text-decoration: underline;
+      }
+      .container-fluid {margin-top: 8px;}
+
+      .col-lg-4.top>div{height: 50px;}
+
+      .well{
+        height: 250px;
+        background-color: lightgrey;
+        border-radius: 1;
+        box-shadow: 3px 3px 3px 3px #888888;
+        padding: 3px;line-height: 70%;
+        text-align: center;
+      }
+
+    .side>div{
+      width: 110px;
+      height: 600px;
+      /*position: fixed;*/
+      background-color: lightgrey;
+    }
+
+    #chart1,#chart2,#chart3{
+      width: 300px;
+      height: 60px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    div.dc-html-legend {
+    font-size: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 70px;
+    float: right;
+    padding-right: 15px;
+    margin-top: 20px;
+    margin-right: 5px;
+    width: 60px;
+  }
+th{background-color: dimgrey;color:white;}
+tr:nth-child(even) {background-color: #e8eaed;}
+tr:hover {background-color: #ddd;}
+
+table{border:1px solid black;}
+
+
+  .table,th,td{height:15px;
+    /*border-collapse: collapse;*/
+    font-size: 10px;
+    text-align: left;
+   }
+
+  .axis.y{display: none;}
+
+
+</style>
+
+
+
+<body>
+      <div class="header">
+        <p>Dashboard</p>
+    </div>
+
+    <div class="container-fluid">
+        <div class="col-lg-1 side">
+          <div class="row">
+          <div class="col-lg-12">
+            <div class="Year">
+            <p>Year</p>
+            <select style="width:80px;">
+              <option value="0">All</option>
+              <option value="1993">1993</option>
+              <option value="1998">1998</option>
+              <option value="2003">2003</option>
+              <option value="2008">2008</option>
+              <option value="2013">2013</option>
+              </select>
+            </div>
+            <div class="AC">
+            <p>ACs</p>
+            <select style="width:80px;">
+              <option value="0">All</option>
+              </select>
+            </div>
+            <div class="District">
+            <p>District</p>
+            <select style="width:80px;">
+              <option value="0">All</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+        <div class="col-lg-11">
+<!-- ************************************row 1*********************** -->
+          <div class="row">
+            <div class="col-lg-4 top">
+              <div class="well">
+                <div id="chart1"><p># Elections</p></div>
+              </div>
+            </div>
+            <div class="col-lg-4 top">
+              <div class="well">
+                <div id="chart3"><p># Candidates</p></div>
+              </div>
+            </div>
+            <div class="col-lg-4 top">
+              <div class="well">
+                <div id="chart2"><p># Votes</p></div>
+              </div>
+            </div>
+          </div>
+<!-- ************************************row 2*********************** -->
+          <div class="row">
+            <div class="col-lg-3">
+              <div class="well">
+                <div id="chart4"><p style="text-align: center;"><b>Vote share by party</b></p></div>
+                <div id="name-legend" class="dc-html-legend-container"></div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="well">
+                  <div id="chart5"><p style="text-align: center;"><b>Votes by Year</b></p></div>
+                </div>
+              </div>
+
+            <div class="col-lg-3">
+                <div class="well">
+                  <p style="text-align: center;"><b>Votes majority by year(top 5)</b></p>
+                  <table class="table" id="chart6">
+                    <thead>
+                        <tr>
+                          <th>Year</th>
+                          <th>Party</th>
+                          <th>AC</th>
+                          <th>#Votes</th>
+                        </tr>
+                    </thead>
+               </table>
+                </div>
+              </div>
+            </div>
+<!-- ************************************row 3*********************** -->
+            <div class="row">
+            <div class="col-lg-3">
+              <div class="well">
+                <div id="chart7"><p style="text-align: center;"><b>Party wise winnings</b></p></div>
+                  <div id="name-legend1" class="dc-html-legend-container" style="padding: 0px;"></div>
+              </div>
+
+            </div>
+            <div class="col-lg-3">
+                <div class="well">
+                  <p style="text-align: center;"><b>Top 5 candidates by highest votes</b></p>
+                  <table class="table" id="chart8">
+                    <thead>
+                        <tr>
+                          <th>Cand Name</th>
+                          <th>#Votes</th>
+                        </tr>
+                    </thead>
+               </table>
+                </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="well">
+                  <div id="composite-chart"><p style="text-align: center;"><b>Top 3 winnings by Year</b></p></
+                </div>
+            </div>
+          </div>
+                  
+          </div>
+        </div>
+    </div>
+<!--//////////////////////////////////////////////////////////////  -->
+<script type="text/javascript">
+function print_filter(filter){
+    var f=eval(filter);
+    if (typeof(f.length) != "undefined") {}else{}
+    if (typeof(f.top) != "undefined") {f=f.top(Infinity);}else{}
+    if (typeof(f.dimension) != "undefined") {f=f.dimension(function(d) { return "";}).top(Infinity);}else{}
+    console.log(filter+"("+f.length+") = "+JSON.stringify(f).replace("[","[\n\t").replace(/}\,/g,"},\n\t").replace("]","\n]"));
+  };
+
+  d3.csv("Meghalaya Candidate Info.csv").then(function (d) {
+    var mycrossfilter=crossfilter(d);
+
+//////////////////////////////////To find majority votes
+//     var year=mycrossfilter.dimension(function(d){return [d.year,d.ac_name]})
+//     var y1=year.group().reduce(
+//       function (p, d) {
+//                 if (d.position in p.counts)
+//                   p.counts[d.position]++;
+//                 else {
+//                     p.counts[d.total_valid_votes] += p.counts[d.total_valid_votes];
+//                     p.count++;
+//                 }
+//                 return p;
+//             },
+//             function (p, d) {
+//                 p.counts[d.position]--;
+//                 if (p.counts[d.position] === 0) {
+//                     delete p.counts[d.position];
+//                     p.count--;
+//                 }
+//                 return p;
+//             },
+//             function () {
+//                 return {
+//                     count: 0,
+//                     counts: {}
+//                 };
+//             });
+
+// console.log(y1.all())
+//     print_filter(y1)
+
+/////////////////////////#elctions/////////////////////////////////////////////
+    var yeardim=mycrossfilter.dimension(function(d){return d.year});
+    var yearg = yeardim.groupAll().reduce(
+         function (p, v) { 
+           if(p[v.year]) {
+             p[v.year]++;
+           } else {
+             p[v.year] = 1;
+           }
+           return p
+         },
+         function (p, v) { 
+           p[v.year]--;
+           if(p[v.year] === 0) {
+             delete p[v.year];
+           }
+           return p
+         },
+         function () { 
+           return {};
+         }
+       );
+
+/////////////////////////#Candidates/////////////////////////////////////////////
+    var candim=mycrossfilter.dimension(function(d){return d.cand_name});
+    var candg = candim.groupAll().reduce(
+         function (p, v) { 
+           if(p[v.cand_name]) {
+             p[v.cand_name]++;
+           } else {
+             p[v.cand_name] = 1;
+           }
+           return p
+         },
+         function (p, v) { 
+           p[v.cand_name]--;
+           if(p[v.cand_name] === 0) {
+             delete p[v.cand_name];
+           }
+           return p
+         },
+         function () { 
+           return {};
+         }
+       );
+
+/////////////////////////#Votes/////////////////////////////////////////////
+    var votesdim=mycrossfilter.dimension(function(d){return d.total_valid_votes});
+    var votesg=votesdim.groupAll().reduceSum(function(d){return d.total_valid_votes});
+
+    var votesgp=candim.group().reduceSum(function(d){return d.total_valid_votes});
+    // console.log(votesgp.all())
+
+    // print_filter(candim)
+    // print_filter(votesgp)
+/////////////////////////#Vote share by party/////////////////////////////////////////////
+    var votepartdim=mycrossfilter.dimension(function(d){return d.party_abbreviation});
+    var votepartg=votepartdim.group().reduceSum(function(d){return d.total_valid_votes});
+
+    var votepartg1=votepartdim.groupAll().reduceSum(function(d){return d.total_valid_votes});
+/////////////////////////#Vote by Year/////////////////////////////////////////////
+    var voteyearg=yeardim.group().reduceSum(function(d){return d.total_valid_votes});
+/////////////////////////Party wise Winners/////////////////////////////////////////////
+    var partwing = votepartdim.group().reduce(
+            function (p, d) {
+                if (d.position in p.counts) p.counts[d.position]++;
+                else {
+                    p.counts[d.position] = 1;
+                    p.count++;
+                }
+                return p;
+            },
+            function (p, d) {
+                p.counts[d.position]--;
+                if (p.counts[d.position] === 0) {
+                    delete p.counts[d.position];
+                    p.count--;
+                }
+                return p;
+            },
+            function () {
+                return {
+                    count: 0,
+                    counts: {}
+                };
+            });
+/////////////////////////Majority by year/////////////////////////////////////////////
+    var majoritydim=mycrossfilter.dimension(function(d){return [d.year,d.ac_name,d.majority,d.position,d.party_abbreviation]});
+    var majoritygp=majoritydim.group().reduceSum(function(d){return d.majority});
+    console.log(majoritygp.all())
+
+
+
+
+////////]///////////////////////////////////////////////////
+    var elctions = dc.numberDisplay("#chart1");
+    var votes = dc.numberDisplay("#chart2");
+    var candidate = dc.numberDisplay("#chart3");
+    var votesparty = dc.pieChart("#chart4");
+    var votesyear = dc.barChart("#chart5");
+    var majoritytable = dc.dataTable("#chart6");
+    var partwin = dc.pieChart("#chart7");
+    // var stack=dc.rowChart("#chart8")
+    var topcand = dc.dataTable("#chart8");
+    var compositeChart=dc.compositeChart("#composite-chart")
+
+    
+///////////////////////////////////////////////////////////
+    elctions
+        .formatNumber(d3.format(","))
+        .valueAccessor(function(d) {return Object.keys(d).length;})
+        .group(yearg)
+
+    candidate
+        .formatNumber(d3.format(","))
+        .valueAccessor(function(d) {return Object.keys(d).length;})
+        .group(candg)    
+
+    votes
+        .formatNumber(d3.format(","))
+        .valueAccessor(function(d) {return d})
+        .group(votesg)
+
+    votesparty
+        .width(195)
+        .height(180)
+        .dimension(votepartdim)
+        .group(votepartg)
+        // .innerRadius(20)
+        .externalLabels(0)
+      // .drawPaths(true)
+        .minAngleForLabel(0.2)
+        .turnOnControls(true)
+        .legend(dc.htmlLegend().container('#name-legend').horizontal(false).highlightSelected(true))
+        // .legend(dc.legend())
+        .label(function(d) { return (d.value / votepartg1.value() * 100).toFixed(0) + "%"; })
+
+    votesyear
+       .width(500)
+       .height(200)
+        .xUnits(dc.units.ordinal)
+        .x(d3.scaleBand())
+        .y(d3.scaleLinear().domain([0,1455000]).range([0,200]))
+        .barPadding(0.3)
+        .outerPadding(0.1)
+        .margins({ top: 20, left: 25, right: 15, bottom: 30})
+       .brushOn(true)
+       .yAxisLabel("Votes")
+       .xAxisLabel("Year")
+       .renderLabel(true)
+       .dimension(yeardim)
+       .group(voteyearg)
+       // .ordering(function(d){return -d.key})
+       .colorAccessor(d => d.key)
+       .ordinalColors(['#f7a588','#f99672','#f9906b','#ff7d4f','#fc6a35'])
+       .yAxis().ticks(0)
+/////////////////////dataTable1//////////////////////////
+       majoritytable
+        .width(200)
+        .height(300)
+        .dimension(majoritygp)
+        .group(function(d) {return ""})
+        .columns([function (d) {return d.key[0]},function (d) {return d.key[4]},function (d) {return d.key[1]},function (d) {return d.value}])
+        .showGroups(false)
+        .sortBy(function (d) {return d.value})
+        .order(d3.descending)
+        .size(5)       
+
+////////////////////donut chart////////////////
+      partwin
+        .width(195)
+        .height(170)
+        .dimension(votepartdim)
+        .valueAccessor(function(d) {return d.value.counts['1']})
+        .group(partwing)
+        .label(function(d) {return d.key+":"+d.value.counts['1']})
+        .innerRadius(40)
+        .minAngleForLabel(0.2)
+        // .legend(dc.legend())
+        .legend(dc.htmlLegend().container('#name-legend1').horizontal(false).highlightSelected(true))
+
+
+/////////////////////dataTable//////////////////////////
+       topcand
+        .width(200)
+        .height(300)
+        .dimension(votesgp)
+        .group(function(d) { return ""})
+        .columns([function (d) {return d.key},function (d) {return d.value}])
+        .showGroups(false)
+        .sortBy(function (d) { return d.value})
+        .order(d3.descending)
+        .size(5)
+
+
+///////////////////////////////////Composite Line chart//////////////////////    
+    var total = function(type) {
+      return function(d) {
+        return d.party_abbreviation === type ? d.total_valid_votes : null;
+      };
+    };
+    
+    var tabTotalsGroup  = yeardim.group().reduceSum(total('INC'));
+    var visaTotalsGroup = yeardim.group().reduceSum(total('IND'));
+    var cashTotalsGroup = yeardim.group().reduceSum(total('UDP'));
+    
+    compositeChart
+      .width(520)
+      .height(220)
+      // .xUnits(dc.units.ordinal)
+      .x(d3.scaleBand().domain(d.map(function(d){return d.year})))
+      .yAxisLabel("Votes")
+      .legend(dc.legend().x(450).y(5).itemHeight(13).gap(5))
+      // .renderHorizontalGridLines(false)
+      .dimension(yeardim)
+      .compose([
+          dc.lineChart(compositeChart).group(tabTotalsGroup, 'INC').colors(['#ffaa00']),
+          dc.lineChart(compositeChart).group(visaTotalsGroup, 'IND').colors(['#aa00ff']),
+          dc.lineChart(compositeChart).group(cashTotalsGroup, 'UDP').colors(['#00aaff'])])
+      .brushOn(false)
+/////////////////////////////////////Composite Line chart//////////////////////    
+
+    // compositeChart
+    //   .width(500)
+    //   .height(250)
+    //  // .xUnits(dc.units.ordinal)
+    //   .x(d3.scaleBand())
+    //   .x(d3.scaleLinear().domain([1993,2018]))
+    //   .yAxisLabel("Votes")
+    //   .legend(dc.legend().x(80).y(20).itemHeight(13).gap(5))
+    //   // .renderHorizontalGridLines(false)
+    //   .dimension(yeardim)
+    //   .valueAccessor(function(d) {return d.value.top(3)})
+    //   .compose([
+          // dc.lineChart(compositeChart).valueAccessor(function(d) {return d.value.counts['1']}).group(votesgp).colors(['#ffaa00']),
+
+    //       dc.lineChart(compositeChart).group(votesgp).colors(['#aa00ff']),
+    //       dc.lineChart(compositeChart).group(votesgp).colors(['#00aaff'])])
+    //   .brushOn(false)
+
+dc.renderAll();
+  });
+
+</script>
+
+</body>
+</html>
